@@ -26,7 +26,11 @@
 - `buildSynergy(festival, form, places, peopleLabels)` — 用 `hashString(festival.id+brandName)` 確定性挑選 `SYNERGY_TEMPLATES` 其中一個變體，套入 `{{FESTIVAL}}/{{TA}}/{{BRAND}}/{{PLACE}}/{{PEOPLE}}`。
 - `buildOverviewRule(form, items)` — 組出「顧問總評」段落，統計檔期數／地利／人和。
 
-### AI優化路徑（選用，BYOK）
+### 「給 AI 的補充描述」快速提示詞（2026-09-18 新增）
+
+`PROMPT_PRESETS`（`index.html` 內，非 `data.js`——純 UI 便利功能，比照 `text-organizer-studio` 的 `EXTRA_PRESETS` 慣例但不鎖金鑰）：5 組不同角度的補充描述快速鍵（數據轉換導向／品牌故事情感連結／在地社群認同／高端質感定位／急迫稀缺感），點擊直接覆寫 `#f-extra` 欄位內容（非附加），`initPromptChips()` 用事件委派掛在 `#promptChipRow`。**與 `text-organizer-studio` 的差異**：本工具的「補充描述」欄位本來就沒有鎖金鑰（沒金鑰時規則式引擎仍可正常產生行事曆，此欄位純粹只在有金鑰、走 AI 優化路徑時才會被讀取），所以這排快速鍵也不需要 `disabled` 狀態切換。
+
+## AI優化路徑（選用，BYOK）
 
 `AI_PROVIDERS`／`callLLM()`／`parseJsonObject()` 與 `new-product-strategy-studio`／`coffee-ig-planner` 同一套實作（Claude 需 `anthropic-dangerous-direct-browser-access` header；429/500/503/529 重試3次；180秒逾時）。**不逐檔期個別呼叫 API**（避免18次請求），而是一次把整份規則式排定的檔期清單（id/週次/檔期名稱/地利/人和）送給 AI，請它一次回傳所有檔期優化過的「戰略整合共鳴」文案＋一段「顧問總評」，`validateAiResult(parsed, ruleItems)` 逐筆核對 `id` 是否存在、`synergy` 長度是否合理，只有驗證通過的檔期會被替換（`textSource:'ai'`），其餘保留規則式文字（`textSource:'rule'`）——不是全有全無。整支 AI 呼叫失敗時，整份行事曆完全退回規則式結果，不會開天窗。
 

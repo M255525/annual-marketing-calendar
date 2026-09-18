@@ -82,6 +82,10 @@
   .example-btn{font-family:inherit;font-size:12.5px;background:var(--bg-alt);color:var(--text-dim);border:1px solid var(--line);padding:7px 13px;border-radius:999px;cursor:pointer;transition:.15s;}
   .example-btn:hover{border-color:var(--gold);color:var(--gold-soft);}
 
+  .prompt-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 14px;}
+  .prompt-chip{font-family:inherit;font-size:12px;background:var(--bg-alt);color:var(--text-faint);border:1px dashed var(--line);padding:5px 11px;border-radius:999px;cursor:pointer;transition:.15s;}
+  .prompt-chip:hover{border-color:var(--gold);border-style:solid;color:var(--gold-soft);}
+
   .form-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin-bottom:14px;}
   .form-grid label, .form-card > label.full{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--text-dim);}
@@ -222,6 +226,7 @@
       <label class="full">給 AI 的補充描述（選填，僅 AI 優化時使用）
         <textarea id="f-extra" placeholder="例如：品牌語氣、想強調的定位、想避免的用詞…"></textarea>
       </label>
+      <div class="prompt-chip-row" id="promptChipRow"></div>
 
       <details class="api-settings">
         <summary>AI 優化設定（選用，需自備 API 金鑰）</summary>
@@ -659,6 +664,27 @@
     });
   }
 
+  /* ---------- 5 組「給 AI 的補充描述」快速提示詞 ---------- */
+  var PROMPT_PRESETS = [
+    { label: "數據轉換導向", text: "請用理性、重數據的語氣描述每個檔期的價值，多用轉換率、客單價、回購率等具體行銷指標語言，少用抽象形容詞。" },
+    { label: "品牌故事情感連結", text: "請用說故事的方式描述每個檔期，強調品牌與目標客群之間的情感連結與生活情境，避免生硬的促銷術語。" },
+    { label: "在地社群認同", text: "請強調品牌與在地文化、在地社群的連結，讓每個檔期的文案讀起來像是在乎鄰里的品牌在對話，而非全國連鎖的公式化促銷。" },
+    { label: "高端質感定位", text: "請採用精品、質感導向的語氣，避免出現「折扣」「特價」「限量搶購」等降價促銷字眼，改以稀有體驗與尊榮感取代。" },
+    { label: "急迫稀缺感", text: "請在文案中適度營造限時、限量的急迫感與稀缺心理，鼓勵目標客群盡快行動，但避免誇大不實的話術。" }
+  ];
+  function initPromptChips(){
+    var wrap = $("promptChipRow");
+    wrap.innerHTML = PROMPT_PRESETS.map(function(p, i){
+      return '<button type="button" class="prompt-chip" data-idx="' + i + '">💬 ' + p.label + '</button>';
+    }).join("");
+    wrap.addEventListener("click", function(e){
+      var btn = e.target.closest(".prompt-chip");
+      if(!btn) return;
+      $("f-extra").value = PROMPT_PRESETS[parseInt(btn.dataset.idx, 10)].text;
+      showStatus("info", '已套用提示詞「' + PROMPT_PRESETS[parseInt(btn.dataset.idx, 10)].label + '」，按「產生我的全年度行事曆」並填入 AI 金鑰即可套用此角度優化。');
+    });
+  }
+
   /* ---------- AI 引擎 ---------- */
   var AI_PROVIDERS = {
     claude:     { label: "Claude（Anthropic）",        defaultModel: "claude-opus-4-8" },
@@ -950,6 +976,7 @@
   function init(){
     initIndustrySelect();
     initExamples();
+    initPromptChips();
     initAiPanel();
 
     var savedForm = null, savedResult = null;
