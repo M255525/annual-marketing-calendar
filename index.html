@@ -140,6 +140,7 @@
   .tl-lunar-badge{font-size:9.5px;color:var(--text-faint);background:rgba(255,255,255,.06);border-radius:4px;padding:0 4px;display:inline-block;width:fit-content;}
   .tl-text{white-space:normal;line-height:1.3;}
   .tl-badge{display:inline-block;background:rgba(212,162,76,.14);color:var(--gold-soft);border-radius:999px;padding:1px 7px;font-size:10.5px;margin:1px 3px 1px 0;}
+  .tl-sub-divider{border-top:1px dashed var(--line);margin:5px 0;}
 
   .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);}
   table{width:100%;border-collapse:collapse;min-width:920px;font-size:13.5px;}
@@ -490,8 +491,12 @@
   function renderTimeline(items, weeksCount, startWeek){
     var el = $("timelineGrid");
     el.innerHTML = "";
+    // 一週可能同時落有多個檔期（例如全國性檔期與產業專屬檔期同週），用陣列分組，不可直接覆蓋。
     var byIndex = {};
-    items.forEach(function(it){ byIndex[it.displayIndex] = it; });
+    items.forEach(function(it){
+      if(!byIndex[it.displayIndex]) byIndex[it.displayIndex] = [];
+      byIndex[it.displayIndex].push(it);
+    });
 
     var widths = [];
     for(var i = 0; i < weeksCount; i++){ widths.push(byIndex[i] ? "180px" : "20px"); }
@@ -507,52 +512,64 @@
     });
 
     for(var j = 0; j < weeksCount; j++){
-      var it = byIndex[j];
+      var group = byIndex[j];
       var weekNum = ((startWeek - 1 + j) % 52) + 1;
 
       var tick = document.createElement("div");
-      tick.className = "tl-tick" + (it ? " has-item" : "");
+      tick.className = "tl-tick" + (group ? " has-item" : "");
       tick.style.gridColumn = String(j + 2); tick.style.gridRow = "1";
-      tick.textContent = it ? ("W" + weekNum) : "";
+      tick.textContent = group ? ("W" + weekNum) : "";
       el.appendChild(tick);
 
       var cellT = document.createElement("div");
-      cellT.className = "tl-cell tl-tianshi" + (it ? " filled" : "");
+      cellT.className = "tl-cell tl-tianshi" + (group ? " filled" : "");
       cellT.style.gridColumn = String(j + 2); cellT.style.gridRow = "2";
 
       var cellP = document.createElement("div");
-      cellP.className = "tl-cell tl-dili" + (it ? " filled" : "");
+      cellP.className = "tl-cell tl-dili" + (group ? " filled" : "");
       cellP.style.gridColumn = String(j + 2); cellP.style.gridRow = "3";
 
       var cellR = document.createElement("div");
-      cellR.className = "tl-cell tl-renhe" + (it ? " filled" : "");
+      cellR.className = "tl-cell tl-renhe" + (group ? " filled" : "");
       cellR.style.gridColumn = String(j + 2); cellR.style.gridRow = "4";
 
-      if(it){
-        var nameEl = document.createElement("div");
-        nameEl.className = "tl-festival-name"; nameEl.textContent = it.name;
-        cellT.appendChild(nameEl);
-        if(it.lunar){
-          var lu = document.createElement("div");
-          lu.className = "tl-lunar-badge"; lu.textContent = "農曆";
-          cellT.appendChild(lu);
-        }
-        cellT.title = it.dateLabel;
+      if(group){
+        group.forEach(function(it, idx){
+          if(idx > 0){
+            cellT.appendChild(document.createElement("div")).className = "tl-sub-divider";
+            cellP.appendChild(document.createElement("div")).className = "tl-sub-divider";
+            cellR.appendChild(document.createElement("div")).className = "tl-sub-divider";
+          }
 
-        var placeEl = document.createElement("div");
-        placeEl.className = "tl-text";
-        placeEl.textContent = it.places.length ? it.places.join("、") : "—";
-        cellP.appendChild(placeEl);
+          var nameEl = document.createElement("div");
+          nameEl.className = "tl-festival-name"; nameEl.textContent = it.name;
+          nameEl.title = it.dateLabel;
+          cellT.appendChild(nameEl);
+          if(it.lunar){
+            var lu = document.createElement("div");
+            lu.className = "tl-lunar-badge"; lu.textContent = "農曆";
+            cellT.appendChild(lu);
+          }
 
-        if(it.peopleLabels.length){
-          it.peopleLabels.forEach(function(lb){
-            var badge = document.createElement("span");
-            badge.className = "tl-badge"; badge.textContent = lb;
-            cellR.appendChild(badge);
-          });
-        } else {
-          cellR.textContent = "—";
-        }
+          var placeEl = document.createElement("div");
+          placeEl.className = "tl-text";
+          placeEl.textContent = it.places.length ? it.places.join("、") : "—";
+          cellP.appendChild(placeEl);
+
+          if(it.peopleLabels.length){
+            var peopleWrap = document.createElement("div");
+            it.peopleLabels.forEach(function(lb){
+              var badge = document.createElement("span");
+              badge.className = "tl-badge"; badge.textContent = lb;
+              peopleWrap.appendChild(badge);
+            });
+            cellR.appendChild(peopleWrap);
+          } else {
+            var noneEl = document.createElement("div");
+            noneEl.className = "tl-text"; noneEl.textContent = "—";
+            cellR.appendChild(noneEl);
+          }
+        });
       }
       el.appendChild(cellT); el.appendChild(cellP); el.appendChild(cellR);
     }

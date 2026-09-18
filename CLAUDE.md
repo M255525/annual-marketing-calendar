@@ -15,7 +15,7 @@
 ## 架構
 
 - `index.html` — 表單（品牌變數／地利通路動態清單／人和六大工具勾選／起始週與涵蓋週數）＋52週時間軸（`.timeline-grid`，CSS Grid，橫軸週次縱軸天時/地利/人和三列，有檔期的週次顯示寬卡片、空週只留細刻度）＋檔期總覽表（`table`，供橫向比較與列印）。單一 IIFE `<script>`（另有 2 個獨立 IIFE：跑馬燈／PWA安裝，互不相依）。
-- `data.js` — `window.AMC_DATA`：`CHANNELS`（六大整合行銷工具定義）、`PLACE_TYPE_LABELS`（地利通路三種類型）、`INDUSTRY_LABELS`＋6個產業桶（`beautyFashion`/`foodBeverage`/`electronics3c`/`eduChildren`/`healthWellness`/`general`）、`NATIONAL_FESTIVALS`（18個全國性檔期，priority 1=優先保留 2=次要）、`INDUSTRY_FESTIVALS`（各產業桶4個專屬檔期）、`SYNERGY_TEMPLATES`（3個「戰略整合共鳴」規則式模板變體）、`hashString()`、`PRESETS`（5組範例，涵蓋5個產業桶）。**這是規則引擎的唯一真實來源**。
+- `data.js` — `window.AMC_DATA`：`CHANNELS`（六大整合行銷工具定義）、`PLACE_TYPE_LABELS`（地利通路三種類型）、`INDUSTRY_LABELS`＋7個產業桶（`beautyFashion`/`foodBeverage`/`electronics3c`/`eduChildren`/`healthWellness`/`hospitality`/`general`）、`NATIONAL_FESTIVALS`（18個全國性檔期，priority 1=優先保留 2=次要）、`INDUSTRY_FESTIVALS`（各產業桶4-5個專屬檔期）、`SYNERGY_TEMPLATES`（3個「戰略整合共鳴」規則式模板變體）、`hashString()`、`PRESETS`（6組範例，涵蓋6個產業桶——僅 `general` 一般零售桶無專屬範例）。**這是規則引擎的唯一真實來源**。`hospitality`（飯店／住宿業，2026-09-18應使用者要求新增）5個專屬檔期涵蓋寒假親子旅遊季／婚宴蜜月旺季／暑假親子旅遊旺季／企業尾牙訂席旺季／跨年夜住宿倒數檔期，其中跨年夜住宿倒數檔期（`hs05`，week52）刻意與全國性 `nf18` 尾牙／歲末年終慶同週，用來驗證下方「多檔期同週」的堆疊渲染邏輯。
 
 ### 規則式引擎（`index.html` 內，免API金鑰，同輸入必同輸出）
 
@@ -37,6 +37,8 @@
 ## 52 週時間軸（`.timeline-grid`）
 
 CSS Grid 動態產生：第1欄固定寬（`天時/地利/人和` sticky 列標籤），之後每週一欄，寬度依該週有無檔期動態決定（有檔期180px、無檔期20px細刻度），`grid-template-rows` 固定4列（週次刻度＋天時/地利/人和）。這是本工具的 signature 視覺元素，直接對應使用者原始需求「橫軸為52週時間線，縱軸交叉天時地利人和」。下方另有一份 `table` 檔期總覽表（週次/日期/天時/地利/人和/戰略整合共鳴），供橫向捲動閱讀與列印，兩者資料來源相同（`state.result.items`），互為視覺與資訊密度的互補呈現。
+
+**多檔期同週的堆疊渲染**（2026-09-18修正）：`renderTimeline()` 的 `byIndex` 是「`displayIndex → 陣列`」而非單一物件——全國性檔期與產業專屬檔期偶爾會落在同一週（例如 `foodBeverage` 的聖誕聚餐檔期與全國性聖誕節同在week51、`hospitality` 的跨年夜住宿倒數檔期與全國性尾牙同在week52），若直接覆蓋會讓時間軸視覺上憑空少一個檔期（`檔期總覽表`的`table`因為是逐 `items` 陣列渲染, 從一開始就沒有這個問題）。目前作法是同一週欄位內，天時/地利/人和三個儲存格各自把該週的多筆檔期以 `.tl-sub-divider`（虛線分隔）堆疊顯示，欄寬不變但該週所在的整個 row 高度會依最高的儲存格自動撐高（CSS Grid `minmax(66px,auto)` 天性如此，其餘欄位留白，屬可接受的次要視覺代價）。
 
 ## 視覺主題
 

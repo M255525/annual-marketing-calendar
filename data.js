@@ -31,9 +31,10 @@
     electronics3c: '3C科技／家電',
     eduChildren: '親子教育／兒童',
     healthWellness: '健康保健／運動',
+    hospitality: '飯店／住宿業',
     general: '一般零售／其他'
   };
-  var INDUSTRY_ORDER = ['beautyFashion', 'foodBeverage', 'electronics3c', 'eduChildren', 'healthWellness', 'general'];
+  var INDUSTRY_ORDER = ['beautyFashion', 'foodBeverage', 'electronics3c', 'eduChildren', 'healthWellness', 'hospitality', 'general'];
 
   /* ---------------- 天時：全國性檔期（TA 真正會過的節，非品牌自己的紀念日） ----------------
      priority: 1=優先保留 2=次要（總數超過18檔時優先被裁掉）
@@ -91,6 +92,13 @@
       { id: 'hw03', name: '秋冬免疫力保健季', week: 43, dateLabel: '10月底', lunar: false, priority: 2, placeHint: ['online'], peoplePriority: ['crm', 'otherMedia', 'curation'] },
       { id: 'hw04', name: '年度健檢／回饋季', week: 49, dateLabel: '12月', lunar: false, priority: 2, placeHint: ['offline', 'special'], peoplePriority: ['crm', 'crossIndustry', 'event'] }
     ],
+    hospitality: [
+      { id: 'hs01', name: '寒假親子旅遊季', week: 3, dateLabel: '1月中', lunar: false, priority: 2, placeHint: ['online', 'offline'], peoplePriority: ['otherMedia', 'crm', 'selfMedia'] },
+      { id: 'hs02', name: '婚宴蜜月旺季', week: 16, dateLabel: '4月', lunar: false, priority: 2, placeHint: ['offline', 'special'], peoplePriority: ['event', 'crossIndustry', 'curation'] },
+      { id: 'hs03', name: '暑假親子旅遊旺季', week: 29, dateLabel: '7月中', lunar: false, priority: 1, placeHint: ['online', 'offline'], peoplePriority: ['otherMedia', 'selfMedia', 'event'] },
+      { id: 'hs04', name: '企業尾牙訂席旺季', week: 47, dateLabel: '11月中', lunar: false, priority: 1, placeHint: ['offline', 'special'], peoplePriority: ['crossIndustry', 'event', 'crm'] },
+      { id: 'hs05', name: '跨年夜住宿倒數檔期', week: 52, dateLabel: '12/31', lunar: false, priority: 1, placeHint: ['online', 'offline'], peoplePriority: ['selfMedia', 'otherMedia', 'event'] }
+    ],
     general: [
       { id: 'gn01', name: '换季出清特賣週', week: 12, dateLabel: '3月', lunar: false, priority: 2, placeHint: ['offline', 'online'], peoplePriority: ['otherMedia', 'selfMedia', 'crm'] },
       { id: 'gn02', name: '夏季特賣週', week: 27, dateLabel: '7月', lunar: false, priority: 2, placeHint: ['online', 'offline'], peoplePriority: ['otherMedia', 'selfMedia', 'curation'] },
@@ -112,7 +120,7 @@
     return h;
   }
 
-  /* ---------------- 五組內建範例 ---------------- */
+  /* ---------------- 六組內建範例 ---------------- */
   var PRESETS = [
     {
       label: '美妝保養｜蒔光植萃',
@@ -184,6 +192,21 @@
       startWeek: 1,
       weeksCount: 52,
       extra: '希望強調科學實證與長期陪伴感，避免速效誇大用語。'
+    },
+    {
+      label: '飯店住宿｜雲間驛渡假飯店',
+      brandName: '雲間驛渡假飯店 CloudHarbor Resort',
+      industry: 'hospitality',
+      ta: '25-45歲追求質感小旅行與紀念日住宿體驗的都會客群',
+      places: [
+        { name: '官方訂房網站', type: 'online' },
+        { name: 'OTA訂房平台官方旗艦店', type: 'online' },
+        { name: '飯店櫃檯／宴會廳', type: 'offline' }
+      ],
+      channels: ['selfMedia', 'otherMedia', 'crm', 'event', 'crossIndustry'],
+      startWeek: 1,
+      weeksCount: 52,
+      extra: '希望強調在地特色與紀念日客製體驗，避免過度強調低價促銷語氣。'
     }
   ];
 
