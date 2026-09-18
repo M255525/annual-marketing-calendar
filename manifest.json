@@ -1,0 +1,16 @@
+{
+  "name": "全年度行銷行事曆產生器",
+  "short_name": "行銷行事曆",
+  "description": "以天時、地利、人和三維度交織 52 週時間線，規劃全年度行銷檔期與整合行銷渠道，可選填 AI 金鑰生成專屬優化文案",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101828",
+  "theme_color": "#1b2a4a",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全年度行銷行事曆產生器｜天時地利人和</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b2a4a">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="行銷行事曆">
+<style>
+  :root{
+    --bg:#0f1626;
+    --bg-alt:#151f36;
+    --panel:#16213b;
+    --panel-raised:#1c2b4a;
+    --line:#2c3c60;
+    --line-soft:#233252;
+    --text:#eef2fb;
+    --text-dim:#b7c2dd;
+    --text-faint:#7c88a8;
+    --navy:#1b2a4a;
+    --navy-light:#2a3f6b;
+    --gold:#d4a24c;
+    --gold-soft:#e7c581;
+    --teal:#4fb3a9;
+    --red:#e08268;
+    --green:#7fc98a;
+    --font-sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",-apple-system,sans-serif;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);line-height:1.65;}
+  .wrap{max-width:1160px;margin:0 auto;padding:32px 20px 60px;}
+
+  /* ---- 跑馬燈 ---- */
+  #marqueeBar{position:fixed;top:0;left:0;right:0;height:30px;background:var(--panel);border-bottom:1px solid var(--line-soft);z-index:2100;overflow:hidden;display:none;align-items:center;}
+  #marqueeBar.show{display:flex;}
+  #marqueeTrack{display:inline-block;white-space:nowrap;padding-left:100%;font-size:13px;font-weight:600;color:var(--gold-soft);animation:marquee-scroll 30s linear infinite;}
+  body.has-marquee{padding-top:30px;}
+  @keyframes marquee-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  header.hero{
+    background:linear-gradient(135deg,var(--navy),#0b1327 70%);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px 28px;
+    color:#f6f0e2;
+    margin-bottom:28px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::after{
+    content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(212,162,76,.22),transparent 70%);
+  }
+  header.hero .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;margin-bottom:8px;color:var(--gold-soft);}
+  header.hero h1{margin:0 0 6px;font-size:clamp(22px,3.4vw,30px);}
+  header.hero .tagline{font-size:15px;opacity:.9;margin-bottom:16px;max-width:640px;}
+  .pillar-row{display:flex;flex-wrap:wrap;gap:8px;position:relative;}
+  .pillar-row span{
+    background:rgba(212,162,76,.14);border:1px solid rgba(212,162,76,.4);border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--gold-soft);
+  }
+
+  .consultant-note{
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:var(--radius);padding:18px 20px;margin-bottom:32px;font-size:14.5px;color:var(--text-dim);
+  }
+  .consultant-note b{color:var(--text);}
+  .source-tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;}
+  .source-tag.ai{background:rgba(79,179,169,.18);color:var(--teal);}
+  .source-tag.rule{background:rgba(124,136,168,.18);color:var(--text-faint);}
+
+  section{margin-bottom:36px;}
+  h2{font-size:19px;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  h2 .num{background:var(--navy);border:1px solid var(--gold);color:var(--gold-soft);width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+
+  .example-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .example-btn{font-family:inherit;font-size:12.5px;background:var(--bg-alt);color:var(--text-dim);border:1px solid var(--line);padding:7px 13px;border-radius:999px;cursor:pointer;transition:.15s;}
+  .example-btn:hover{border-color:var(--gold);color:var(--gold-soft);}
+
+  .form-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px;margin-bottom:14px;}
+  .form-grid label, .form-card > label.full{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--text-dim);}
+  .form-card input[type="text"], .form-card input[type="number"], .form-card input[type="password"], .form-card textarea, .form-card select{
+    font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-raised);color:var(--text);
+  }
+  .form-card textarea{resize:vertical;min-height:56px;}
+  .form-card > label.full{margin-bottom:14px;}
+
+  .subblock{border:1px dashed var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;background:var(--bg-alt);}
+  .subblock > .subtitle{font-size:13.5px;font-weight:700;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+  .place-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;align-items:center;}
+  .place-row input[type="text"]{flex:1;min-width:160px;}
+  .place-row select{width:auto;}
+  .place-row .rm-btn{background:none;border:1px solid var(--line);color:var(--red);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;}
+  .add-place-btn{font-family:inherit;font-size:12.5px;background:var(--panel-raised);color:var(--gold-soft);border:1px solid var(--line);padding:6px 12px;border-radius:8px;cursor:pointer;}
+
+  .channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+  .channel-item{display:flex;gap:8px;align-items:flex-start;background:var(--panel-raised);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  .channel-item input{margin-top:3px;}
+  .channel-item .cl-label{font-size:13.5px;font-weight:700;color:var(--text);}
+  .channel-item .cl-desc{font-size:12px;color:var(--text-faint);}
+
+  details.api-settings{border:1px dashed var(--line);border-radius:10px;padding:10px 14px;margin-bottom:16px;background:var(--bg-alt);}
+  details.api-settings summary{cursor:pointer;font-size:13.5px;font-weight:700;color:var(--text-dim);}
+  .api-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;margin-top:12px;}
+  .api-grid label.full{grid-column:1/-1;}
+  .api-note{font-size:12.5px;color:var(--text-faint);margin:10px 0 2px;}
+
+  .form-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .btn{font-family:inherit;font-size:14px;font-weight:700;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);cursor:pointer;}
+  .btn:hover{background:var(--line-soft);}
+  .btn.primary{background:var(--gold);color:#1b1204;border-color:var(--gold);}
+  .btn.primary:hover{opacity:.9;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .gen-status{margin-top:12px;font-size:13px;padding:8px 12px;border-radius:8px;display:none;}
+  .gen-status.show{display:block;}
+  .gen-status.status-ok{background:rgba(127,201,138,.14);color:var(--green);}
+  .gen-status.status-info{background:rgba(212,162,76,.14);color:var(--gold-soft);}
+  .gen-status.status-err{background:rgba(224,130,104,.14);color:var(--red);}
+
+  /* ---- 52週時間軸（經緯格子） ---- */
+  .timeline-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:10px;}
+  .timeline-grid{display:grid;column-gap:4px;row-gap:4px;align-items:stretch;}
+  .tl-label{position:sticky;left:0;background:var(--panel);z-index:5;display:flex;align-items:center;font-size:12px;font-weight:700;color:var(--gold-soft);padding:2px 6px;white-space:nowrap;}
+  .tl-corner{background:var(--panel);}
+  .tl-tick{font-size:10px;color:var(--text-faint);text-align:center;white-space:nowrap;overflow:hidden;}
+  .tl-tick.has-item{color:var(--gold-soft);font-weight:700;}
+  .tl-cell{background:var(--bg-alt);border-radius:6px;min-height:26px;padding:4px 6px;font-size:11.5px;color:var(--text-faint);display:flex;flex-direction:column;gap:3px;justify-content:center;overflow:hidden;}
+  .tl-cell.filled{background:var(--panel-raised);border:1px solid var(--line-soft);color:var(--text-dim);}
+  .tl-tianshi.filled{border-left:3px solid var(--gold);}
+  .tl-dili.filled{border-left:3px solid var(--teal);}
+  .tl-renhe.filled{border-left:3px solid var(--gold-soft);}
+  .tl-festival-name{font-weight:700;font-size:12px;color:var(--text);white-space:normal;line-height:1.3;}
+  .tl-lunar-badge{font-size:9.5px;color:var(--text-faint);background:rgba(255,255,255,.06);border-radius:4px;padding:0 4px;display:inline-block;width:fit-content;}
+  .tl-text{white-space:normal;line-height:1.3;}
+  .tl-badge{display:inline-block;background:rgba(212,162,76,.14);color:var(--gold-soft);border-radius:999px;padding:1px 7px;font-size:10.5px;margin:1px 3px 1px 0;}
+
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);}
+  table{width:100%;border-collapse:collapse;min-width:920px;font-size:13.5px;}
+  thead th{text-align:left;background:var(--bg-alt);color:var(--text-dim);font-weight:700;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--text-dim);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--panel-raised);}
+  .week-badge{display:inline-block;background:var(--bg-alt);color:var(--gold-soft);border-radius:6px;padding:2px 8px;font-size:12px;white-space:nowrap;}
+  .festival-cell{font-weight:700;color:var(--text);}
+  .synergy-cell{max-width:340px;}
+  .people-cell .tl-badge{margin:2px 4px 2px 0;}
+  .empty-note{padding:24px;text-align:center;color:var(--text-faint);font-size:13.5px;}
+
+  footer{font-size:12.5px;color:var(--text-faint);padding-top:20px;border-top:1px solid var(--line-soft);}
+  footer a{color:var(--text-faint);}
+  .footer-meta{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;}
+  .footer-links{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .footer-link-btn{font-family:inherit;background:none;border:1px solid var(--line-soft);color:var(--text-dim);font-size:12.5px;padding:4px 10px;border-radius:6px;cursor:pointer;}
+  .footer-link-btn:hover{border-color:var(--gold);color:var(--text);}
+
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1b1204;padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:3000;max-width:90vw;text-align:center;font-weight:700;}
+  #toast.show{opacity:1;}
+
+  #pdfWatermark{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:9999;}
+  #pdfWatermark img{width:42%;min-width:200px;max-width:380px;opacity:.13;}
+  @media print{
+    #marqueeBar,.form-card,.example-row,header.hero .pillar-row,#toast,.footer-links,.no-print{display:none !important;}
+    body{background:#fff;color:#111;}
+    .consultant-note,.timeline-scroll,.table-scroll,.panel,table,.tl-cell{background:#fff !important;color:#111 !important;border-color:#ccc !important;}
+    #pdfWatermark{display:flex !important;}
+    .timeline-scroll{overflow:visible;}
+  }
+
+  @media (max-width:560px){
+    .wrap{padding:20px 14px 40px;}
+    header.hero{padding:24px 20px;}
+  }
+</style>
+</head>
+<body>
+<div id="marqueeBar"><div id="marqueeTrack"></div></div>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">全年度行銷行事曆・天時・地利・人和</div>
+    <h1>全年度行銷行事曆產生器</h1>
+    <div class="tagline">橫軸是 52 週時間線，縱軸交織「天時（TA 真正會過的節）×地利（交易通路）×人和（六大整合行銷工具）」——ROAS 的狂飆從來不是單點操作，而是三線收斂的必然結果。</div>
+    <div class="pillar-row">
+      <span>天時：目標市場的節慶檔期</span>
+      <span>地利：交易發生的通路</span>
+      <span>人和：自媒體／他媒體／CRM／活動／策展／異業</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">0</span>設定你的品牌變數</h2>
+    <div class="form-card">
+      <div class="example-row" id="exampleRow"></div>
+
+      <div class="form-grid">
+        <label>品牌名稱<input type="text" id="f-brandName"></label>
+        <label>產業類別<select id="f-industry"></select></label>
+        <label>目標客群（TA）<input type="text" id="f-ta" placeholder="例：25-40歲重視成分的都會女性"></label>
+        <label>行事曆起始週（第幾週）<input type="number" id="f-startWeek" min="1" max="52" value="1"></label>
+        <label>涵蓋週數<input type="number" id="f-weeksCount" min="4" max="104" value="52"></label>
+      </div>
+
+      <div class="subblock">
+        <div class="subtitle">地利：列出品牌實際的交易通路</div>
+        <div id="placeList"></div>
+        <button type="button" class="add-place-btn" id="addPlaceBtn">＋ 新增通路</button>
+      </div>
+
+      <div class="subblock">
+        <div class="subtitle">人和：勾選目前實際有在用的整合行銷工具</div>
+        <div class="channel-grid" id="channelGrid"></div>
+      </div>
+
+      <label class="full">給 AI 的補充描述（選填，僅 AI 優化時使用）
+        <textarea id="f-extra" placeholder="例如：品牌語氣、想強調的定位、想避免的用詞…"></textarea>
+      </label>
+
+      <details class="api-settings">
+        <summary>AI 優化設定（選用，需自備 API 金鑰）</summary>
+        <div class="api-grid">
+          <label>服務商<select id="aiProvider"></select></label>
+          <label>模型<input type="text" id="aiModel" placeholder="模型名稱"></label>
+          <label class="full">API 金鑰
+            <span style="position:relative;display:block;">
+              <input type="password" id="aiKey" placeholder="貼上你的 API Key" autocomplete="off" style="padding-right:34px;box-sizing:border-box;">
+              <button type="button" onclick="var i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';" title="顯示／隱藏金鑰" aria-label="顯示／隱藏金鑰" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;padding:4px 6px;opacity:.65;line-height:1;">👁</button>
+            </span>
+          </label>
+        </div>
+        <p class="api-note">金鑰只存在這台電腦的瀏覽器（localStorage），不會送到本工具以外的任何地方。留空時仍可按「產生行事曆」，會用規則式引擎依你填的產業與通路排出基礎行事曆；填了金鑰則會請 AI 針對每個檔期把「戰略整合共鳴」文案改寫得更貼合你的品牌，單一檔期優化失敗會自動退回規則式文字，不影響其他檔期。</p>
+      </details>
+
+      <div class="form-actions">
+        <button class="btn primary" id="generateBtn" type="button">產生我的全年度行事曆</button>
+        <button class="btn" id="resetBtn" type="button">重設為範例</button>
+        <button class="btn no-print" id="pdfBtn" type="button">🖨 匯出 PDF</button>
+        <button class="btn no-print" id="downloadBtn" type="button">📄 下載文字版（.txt）</button>
+      </div>
+      <div class="gen-status" id="genStatus"></div>
+    </div>
+  </section>
+
+  <div class="consultant-note" id="consultantNote"></div>
+
+  <section>
+    <h2><span class="num">1</span>52 週時間軸總覽</h2>
+    <div class="timeline-scroll">
+      <div class="timeline-grid" id="timelineGrid"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>檔期總覽表</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>週次</th><th>日期</th><th>天時檔期</th><th>地利建議</th><th>人和建議</th><th>戰略整合共鳴</th></tr>
+        </thead>
+        <tbody id="calendarRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-meta">
+      <span>製作：Mark Tsai｜<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a>｜品牌變數與 AI 生成內容只存在你的瀏覽器｜生成內容僅供行銷規劃參考，實際檔期請自行查證調整</span>
+      <span class="footer-links">
+        <img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.annual-marketing-calendar" alt="訪客次數" style="vertical-align:middle;height:20px;">
+        <a href="manual.html">操作手冊 →</a>
+        <button type="button" id="installBtn" class="footer-link-btn">📲 加入主畫面</button>
+      </span>
+    </div>
+  </footer>
+
+</div>
+
+<div id="toast"></div>
+<div id="pdfWatermark"><img id="wmImg" alt=""></div>
+
+<script src="data.js?v=20260918a"></script>
+<script>
+(function(){
+  "use strict";
+  var D = window.AMC_DATA;
+  var FORM_KEY = "amcFormState";
+  var RESULT_KEY = "amcResultState";
+  var API_STORAGE_KEY = "amcApiConfig";
+  var FIELD_KEYS = ["brandName", "industry", "ta"];
+
+  var state = { form: null, result: null };
+
+  function $(id){ return document.getElementById(id); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function esc(s){ return String(s == null ? "" : s); }
+
+  /* ---------- 表單初始化 ---------- */
+  function defaultFormFromPreset(preset){
+    return {
+      brandName: preset.brandName, industry: preset.industry, ta: preset.ta,
+      startWeek: preset.startWeek, weeksCount: preset.weeksCount,
+      places: clone(preset.places), channels: preset.channels.slice(), extra: preset.extra || ""
+    };
+  }
+
+  function initIndustrySelect(){
+    var sel = $("f-industry");
+    sel.innerHTML = D.INDUSTRY_ORDER.map(function(k){
+      return '<option value="' + k + '">' + D.INDUSTRY_LABELS[k] + '</option>';
+    }).join("");
+  }
+
+  function renderPlaceList(places){
+    var el = $("placeList");
+    el.innerHTML = "";
+    places.forEach(function(p, idx){
+      var row = document.createElement("div");
+      row.className = "place-row";
+      row.dataset.idx = idx;
+
+      var input = document.createElement("input");
+      input.type = "text"; input.value = p.name || ""; input.placeholder = "通路名稱，例如：官方網站商城";
+      input.addEventListener("input", function(){ places[idx].name = input.value; });
+
+      var sel = document.createElement("select");
+      ["online", "offline", "special"].forEach(function(t){
+        var opt = document.createElement("option");
+        opt.value = t; opt.textContent = D.PLACE_TYPE_LABELS[t];
+        if(p.type === t) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", function(){ places[idx].type = sel.value; });
+
+      var rm = document.createElement("button");
+      rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "移除";
+      rm.addEventListener("click", function(){
+        places.splice(idx, 1);
+        renderPlaceList(places);
+      });
+
+      row.appendChild(input); row.appendChild(sel); row.appendChild(rm);
+      el.appendChild(row);
+    });
+  }
+
+  function initChannelGrid(selectedChannels){
+    var el = $("channelGrid");
+    el.innerHTML = "";
+    D.CHANNEL_ORDER.forEach(function(id){
+      var ch = D.CHANNELS[id];
+      var label = document.createElement("label");
+      label.className = "channel-item";
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.value = id; cb.id = "ch-" + id;
+      cb.checked = selectedChannels.indexOf(id) !== -1;
+      var textWrap = document.createElement("span");
+      textWrap.innerHTML = '<span class="cl-label"></span><br><span class="cl-desc"></span>';
+      textWrap.querySelector(".cl-label").textContent = ch.label;
+      textWrap.querySelector(".cl-desc").textContent = ch.desc;
+      label.appendChild(cb); label.appendChild(textWrap);
+      el.appendChild(label);
+    });
+  }
+
+  function fillFormUI(form){
+    $("f-brandName").value = form.brandName || "";
+    $("f-industry").value = form.industry || D.INDUSTRY_ORDER[0];
+    $("f-ta").value = form.ta || "";
+    $("f-startWeek").value = form.startWeek || 1;
+    $("f-weeksCount").value = form.weeksCount || 52;
+    $("f-extra").value = form.extra || "";
+    renderPlaceList(form.places);
+    initChannelGrid(form.channels);
+  }
+
+  function readFormFromUI(placesRef){
+    var startWeek = Math.min(52, Math.max(1, parseInt($("f-startWeek").value, 10) || 1));
+    var weeksCount = Math.min(104, Math.max(4, parseInt($("f-weeksCount").value, 10) || 52));
+    var channels = D.CHANNEL_ORDER.filter(function(id){ return $("ch-" + id).checked; });
+    var places = placesRef.filter(function(p){ return p.name && p.name.trim(); }).map(function(p){
+      return { name: p.name.trim(), type: p.type || "online" };
+    });
+    return {
+      brandName: $("f-brandName").value.trim() || D.PRESETS[0].brandName,
+      industry: $("f-industry").value || D.INDUSTRY_ORDER[0],
+      ta: $("f-ta").value.trim() || D.PRESETS[0].ta,
+      startWeek: startWeek, weeksCount: weeksCount,
+      places: places, channels: channels,
+      extra: $("f-extra").value.trim()
+    };
+  }
+
+  /* ---------- 規則式引擎 ---------- */
+  function buildFestivalPool(industry){
+    return D.NATIONAL_FESTIVALS.concat(D.INDUSTRY_FESTIVALS[industry] || []);
+  }
+
+  function selectFestivals(pool, startWeek, weeksCount){
+    var endOffset = weeksCount - 1;
+    var inRange = pool.filter(function(f){
+      var displayIndex = (f.week - startWeek + 52) % 52;
+      // 支援跨年度：若 weeksCount 超過 52，額外檢查 +52 週的落點
+      return displayIndex <= endOffset || (weeksCount > 52 && (displayIndex + 52) <= endOffset);
+    }).map(function(f){
+      var displayIndex = (f.week - startWeek + 52) % 52;
+      if(displayIndex > endOffset && weeksCount > 52) displayIndex += 52;
+      var merged = clone(f);
+      merged.displayIndex = displayIndex;
+      return merged;
+    });
+    inRange.sort(function(a, b){ return (a.priority - b.priority) || (a.displayIndex - b.displayIndex); });
+    if(inRange.length > 18) inRange = inRange.slice(0, 18);
+    inRange.sort(function(a, b){ return a.displayIndex - b.displayIndex; });
+    return inRange;
+  }
+
+  function pickPlaces(userPlaces, placeHint){
+    var picks = [];
+    (placeHint || []).forEach(function(type){
+      userPlaces.forEach(function(p){
+        if(p.type === type && picks.indexOf(p.name) === -1 && picks.length < 2) picks.push(p.name);
+      });
+    });
+    if(picks.length === 0 && userPlaces.length) picks.push(userPlaces[0].name);
+    return picks;
+  }
+
+  function pickPeople(userChannels, peoplePriority){
+    var picks = (peoplePriority || []).filter(function(id){ return userChannels.indexOf(id) !== -1; }).slice(0, 3);
+    if(picks.length === 0 && userChannels.length) picks = userChannels.slice(0, 2);
+    return picks;
+  }
+
+  function buildSynergy(festival, form, places, peopleLabels){
+    var idx = D.hashString(festival.id + form.brandName) % D.SYNERGY_TEMPLATES.length;
+    var tpl = D.SYNERGY_TEMPLATES[idx];
+    return tpl
+      .split("{{FESTIVAL}}").join(festival.name)
+      .split("{{TA}}").join(form.ta)
+      .split("{{BRAND}}").join(form.brandName)
+      .split("{{PLACE}}").join(places.length ? places.join("、") : "尚未填寫的通路")
+      .split("{{PEOPLE}}").join(peopleLabels.length ? peopleLabels.join("＋") : "尚未勾選的整合工具");
+  }
+
+  function generateCalendarRule(form){
+    var pool = buildFestivalPool(form.industry);
+    var selected = selectFestivals(pool, form.startWeek, form.weeksCount);
+    return selected.map(function(f){
+      var places = pickPlaces(form.places, f.placeHint);
+      var peopleIds = pickPeople(form.channels, f.peoplePriority);
+      var peopleLabels = peopleIds.map(function(id){ return D.CHANNELS[id].label; });
+      var weekNum = ((f.week - 1) % 52) + 1;
+      return {
+        id: f.id, week: weekNum, displayIndex: f.displayIndex,
+        name: f.name, dateLabel: f.dateLabel, lunar: !!f.lunar,
+        places: places, peopleIds: peopleIds, peopleLabels: peopleLabels,
+        synergy: buildSynergy(f, form, places, peopleLabels),
+        textSource: "rule"
+      };
+    });
+  }
+
+  function buildOverviewRule(form, items){
+    var placeNames = form.places.map(function(p){ return p.name; });
+    var channelLabels = form.channels.map(function(id){ return D.CHANNELS[id].label; });
+    return form.brandName + "全年度規劃了 " + items.length + " 個「" + form.ta + "」真正會過的行銷檔期，橫跨" +
+      (placeNames.length ? placeNames.join("、") : "尚未填寫的通路") + "等地利點，並運用" +
+      (channelLabels.length ? channelLabels.join("、") : "尚未勾選的整合行銷工具") +
+      "交叉操作。只要照著這份時間軸依序啟動，就能讓流量（人和）×情境（天時）×定位（地利）三線在關鍵週次收斂，撐出全年 ROAS 的高峰，而不是仰賴單點廣告投放的運氣。";
+  }
+
+  /* ---------- 渲染 ---------- */
+  function renderConsultantNote(overviewText, source){
+    var el = $("consultantNote");
+    el.innerHTML = "";
+    var b = document.createElement("b"); b.textContent = "顧問總評："; el.appendChild(b);
+    el.appendChild(document.createTextNode(overviewText));
+    var tag = document.createElement("span");
+    tag.className = "source-tag " + (source === "ai" ? "ai" : "rule");
+    tag.textContent = source === "ai" ? "AI 優化" : "規則式";
+    el.appendChild(tag);
+  }
+
+  function renderTimeline(items, weeksCount, startWeek){
+    var el = $("timelineGrid");
+    el.innerHTML = "";
+    var byIndex = {};
+    items.forEach(function(it){ byIndex[it.displayIndex] = it; });
+
+    var widths = [];
+    for(var i = 0; i < weeksCount; i++){ widths.push(byIndex[i] ? "180px" : "20px"); }
+    el.style.gridTemplateColumns = "58px " + widths.join(" ");
+    el.style.gridTemplateRows = "22px repeat(3, minmax(66px,auto))";
+
+    ["", "天時", "地利", "人和"].forEach(function(lab, r){
+      var d = document.createElement("div");
+      d.className = "tl-label" + (r === 0 ? " tl-corner" : "");
+      d.style.gridColumn = "1"; d.style.gridRow = String(r + 1);
+      d.textContent = lab;
+      el.appendChild(d);
+    });
+
+    for(var j = 0; j < weeksCount; j++){
+      var it = byIndex[j];
+      var weekNum = ((startWeek - 1 + j) % 52) + 1;
+
+      var tick = document.createElement("div");
+      tick.className = "tl-tick" + (it ? " has-item" : "");
+      tick.style.gridColumn = String(j + 2); tick.style.gridRow = "1";
+      tick.textContent = it ? ("W" + weekNum) : "";
+      el.appendChild(tick);
+
+      var cellT = document.createElement("div");
+      cellT.className = "tl-cell tl-tianshi" + (it ? " filled" : "");
+      cellT.style.gridColumn = String(j + 2); cellT.style.gridRow = "2";
+
+      var cellP = document.createElement("div");
+      cellP.className = "tl-cell tl-dili" + (it ? " filled" : "");
+      cellP.style.gridColumn = String(j + 2); cellP.style.gridRow = "3";
+
+      var cellR = document.createElement("div");
+      cellR.className = "tl-cell tl-renhe" + (it ? " filled" : "");
+      cellR.style.gridColumn = String(j + 2); cellR.style.gridRow = "4";
+
+      if(it){
+        var nameEl = document.createElement("div");
+        nameEl.className = "tl-festival-name"; nameEl.textContent = it.name;
+        cellT.appendChild(nameEl);
+        if(it.lunar){
+          var lu = document.createElement("div");
+          lu.className = "tl-lunar-badge"; lu.textContent = "農曆";
+          cellT.appendChild(lu);
+        }
+        cellT.title = it.dateLabel;
+
+        var placeEl = document.createElement("div");
+        placeEl.className = "tl-text";
+        placeEl.textContent = it.places.length ? it.places.join("、") : "—";
+        cellP.appendChild(placeEl);
+
+        if(it.peopleLabels.length){
+          it.peopleLabels.forEach(function(lb){
+            var badge = document.createElement("span");
+            badge.className = "tl-badge"; badge.textContent = lb;
+            cellR.appendChild(badge);
+          });
+        } else {
+          cellR.textContent = "—";
+        }
+      }
+      el.appendChild(cellT); el.appendChild(cellP); el.appendChild(cellR);
+    }
+  }
+
+  function renderTable(items){
+    var body = $("calendarRows");
+    body.innerHTML = "";
+    if(!items.length){
+      var tr0 = document.createElement("tr");
+      var td0 = document.createElement("td");
+      td0.colSpan = 6; td0.className = "empty-note";
+      td0.textContent = "目前設定的期間內沒有排到任何檔期，請調整起始週或涵蓋週數。";
+      tr0.appendChild(td0); body.appendChild(tr0);
+      return;
+    }
+    items.forEach(function(it){
+      var tr = document.createElement("tr");
+
+      var tdWeek = document.createElement("td");
+      var badge = document.createElement("span"); badge.className = "week-badge"; badge.textContent = "第 " + it.week + " 週";
+      tdWeek.appendChild(badge);
+
+      var tdDate = document.createElement("td"); tdDate.textContent = it.dateLabel + (it.lunar ? "（農曆）" : "");
+
+      var tdFest = document.createElement("td"); tdFest.className = "festival-cell"; tdFest.textContent = it.name;
+
+      var tdPlace = document.createElement("td"); tdPlace.textContent = it.places.length ? it.places.join("、") : "—";
+
+      var tdPeople = document.createElement("td"); tdPeople.className = "people-cell";
+      if(it.peopleLabels.length){
+        it.peopleLabels.forEach(function(lb){
+          var b = document.createElement("span"); b.className = "tl-badge"; b.textContent = lb;
+          tdPeople.appendChild(b);
+        });
+      } else { tdPeople.textContent = "—"; }
+
+      var tdSyn = document.createElement("td"); tdSyn.className = "synergy-cell";
+      tdSyn.appendChild(document.createTextNode(it.synergy));
+      var srcTag = document.createElement("span");
+      srcTag.className = "source-tag " + (it.textSource === "ai" ? "ai" : "rule");
+      srcTag.textContent = it.textSource === "ai" ? "AI" : "規則式";
+      tdSyn.appendChild(srcTag);
+
+      tr.appendChild(tdWeek); tr.appendChild(tdDate); tr.appendChild(tdFest);
+      tr.appendChild(tdPlace); tr.appendChild(tdPeople); tr.appendChild(tdSyn);
+      body.appendChild(tr);
+    });
+  }
+
+  function renderAll(form, result){
+    renderConsultantNote(result.overview, result.overviewSource);
+    renderTimeline(result.items, form.weeksCount, form.startWeek);
+    renderTable(result.items);
+  }
+
+  function showStatus(kind, msg){
+    var el = $("genStatus");
+    el.className = "gen-status show status-" + kind;
+    el.textContent = msg;
+  }
+
+  /* ---------- 已填表單狀態存取 ---------- */
+  function persistState(){
+    try{
+      localStorage.setItem(FORM_KEY, JSON.stringify(state.form));
+      localStorage.setItem(RESULT_KEY, JSON.stringify(state.result));
+    }catch(e){}
+  }
+
+  /* ---------- 快速範例 ---------- */
+  var placesRefGlobal = null;
+  function initExamples(){
+    var row = $("exampleRow");
+    row.innerHTML = D.PRESETS.map(function(p, i){
+      return '<button type="button" class="example-btn" data-idx="' + i + '">' + p.label + '</button>';
+    }).join("");
+    row.addEventListener("click", function(e){
+      var btn = e.target.closest(".example-btn");
+      if(!btn) return;
+      var preset = D.PRESETS[parseInt(btn.dataset.idx, 10)];
+      if(!confirm('套用範例「' + preset.label + '」會覆蓋目前已填寫的內容，確定要繼續嗎？')) return;
+      var form = defaultFormFromPreset(preset);
+      placesRefGlobal = form.places;
+      fillFormUI(form);
+      showStatus("info", "已套用範例「" + preset.label + "」，確認內容後按「產生我的全年度行事曆」。");
+    });
+  }
+
+  /* ---------- AI 引擎 ---------- */
+  var AI_PROVIDERS = {
+    claude:     { label: "Claude（Anthropic）",        defaultModel: "claude-opus-4-8" },
+    openai:     { label: "OpenAI",                     defaultModel: "gpt-4o-mini" },
+    gemini:     { label: "Gemini（Google AI Studio）",  defaultModel: "gemini-3.5-flash" },
+    openrouter: { label: "OpenRouter",                 defaultModel: "openai/gpt-4o-mini" }
+  };
+
+  function loadApiConfig(){
+    try{ return JSON.parse(localStorage.getItem(API_STORAGE_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function persistApiConfig(){
+    try{
+      localStorage.setItem(API_STORAGE_KEY, JSON.stringify({
+        provider: $("aiProvider").value, model: $("aiModel").value.trim(), apiKey: $("aiKey").value.trim()
+      }));
+    }catch(e){}
+  }
+  function initAiPanel(){
+    var sel = $("aiProvider");
+    sel.innerHTML = Object.keys(AI_PROVIDERS).map(function(k){
+      return '<option value="' + k + '">' + AI_PROVIDERS[k].label + '</option>';
+    }).join("");
+    var cfg = loadApiConfig();
+    sel.value = (cfg.provider && AI_PROVIDERS[cfg.provider]) ? cfg.provider : "claude";
+    $("aiModel").value = cfg.model || AI_PROVIDERS[sel.value].defaultModel;
+    $("aiKey").value = cfg.apiKey || "";
+    sel.addEventListener("change", function(){
+      var modelEl = $("aiModel");
+      var isDefault = Object.keys(AI_PROVIDERS).some(function(k){ return AI_PROVIDERS[k].defaultModel === modelEl.value.trim(); });
+      if(!modelEl.value.trim() || isDefault) modelEl.value = AI_PROVIDERS[sel.value].defaultModel;
+      persistApiConfig();
+    });
+    $("aiModel").addEventListener("input", persistApiConfig);
+    $("aiKey").addEventListener("input", persistApiConfig);
+  }
+
+  async function callLLM(provider, model, apiKey, prompt, onRetry){
+    var url, headers, body, extract;
+    if(provider === "claude"){
+      url = "https://api.anthropic.com/v1/messages";
+      headers = {"content-type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+      body = {model: model, max_tokens: 4000, messages: [{role:"user", content: prompt}]};
+      extract = function(d){
+        if(d.stop_reason === "refusal") throw new Error("模型拒絕了這個請求（refusal）");
+        var t = (d.content || []).filter(function(b){ return b.type === "text"; }).map(function(b){ return b.text; }).join("");
+        if(!t) throw new Error("回應中沒有文字內容");
+        return t;
+      };
+    } else if(provider === "openai"){
+      url = "https://api.openai.com/v1/chat/completions";
+      headers = {"content-type":"application/json","authorization":"Bearer " + apiKey};
+      body = {model: model, messages: [{role:"user", content: prompt}]};
+      extract = function(d){
+        var t = d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
+        if(!t) throw new Error("回應中沒有文字內容");
+        return t;
+      };
+    } else if(provider === "gemini"){
+      url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent";
+      headers = {"content-type":"application/json","x-goog-api-key":apiKey};
+      body = {contents: [{parts: [{text: prompt}]}]};
+      extract = function(d){
+        var parts = (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || [];
+        var t = parts.map(function(p){ return p.text || ""; }).join("");
+        if(!t) throw new Error("回應中沒有文字內容");
+        return t;
+      };
+    } else if(provider === "openrouter"){
+      url = "https://openrouter.ai/api/v1/chat/completions";
+      headers = {"content-type":"application/json","authorization":"Bearer " + apiKey};
+      body = {model: model, messages: [{role:"user", content: prompt}]};
+      extract = function(d){
+        var t = d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
+        if(!t) throw new Error("回應中沒有文字內容");
+        return t;
+      };
+    } else {
+      throw new Error("不支援的服務商");
+    }
+    var RETRYABLE = {429:1, 500:1, 503:1, 529:1};
+    var MAX_TRIES = 3;
+    for(var attempt = 1; attempt <= MAX_TRIES; attempt++){
+      var resp = await fetch(url, {method:"POST", headers:headers, body:JSON.stringify(body), signal: AbortSignal.timeout(180000)});
+      var raw = await resp.text();
+      if(resp.ok) return extract(JSON.parse(raw));
+      var msg = raw.slice(0, 300);
+      try{ var err = JSON.parse(raw); msg = (err.error && err.error.message) || err.message || msg; }catch(e){}
+      if(RETRYABLE[resp.status] && attempt < MAX_TRIES){
+        var waitSec = attempt * 8;
+        if(onRetry) onRetry(attempt, resp.status, waitSec);
+        await new Promise(function(r){ setTimeout(r, waitSec * 1000); });
+        continue;
+      }
+      if(resp.status === 404) msg += "——這通常表示模型名稱錯誤或已停用，請確認目前可用的模型 ID";
+      if(RETRYABLE[resp.status]) msg += "——已自動重試 " + (MAX_TRIES - 1) + " 次仍失敗，多為服務商暫時過載，請稍候再試或更換模型／服務商";
+      throw new Error("API 回應 " + resp.status + "：" + msg);
+    }
+  }
+
+  function parseJsonObject(text){
+    var cleaned = text.replace(/```json|```/g, "");
+    var start = cleaned.indexOf("{");
+    var end = cleaned.lastIndexOf("}");
+    if(start < 0 || end <= start) throw new Error("模型輸出中找不到 JSON 物件：" + text.slice(0, 120));
+    return JSON.parse(cleaned.slice(start, end + 1));
+  }
+
+  function buildPrompt(form, items){
+    var lines = [];
+    lines.push("你是一位擁有豐富實戰經驗的整合行銷顧問，熟悉「天時、地利、人和」戰略架構：");
+    lines.push("天時＝目標市場真正會過的節慶檔期；地利＝品牌與消費者發生交易的通路；人和＝自媒體／他媒體／CRM／活動／策展／異業六大整合行銷工具。");
+    lines.push("");
+    lines.push("客戶資訊：");
+    lines.push("- 品牌名稱：" + form.brandName);
+    lines.push("- 產業類別：" + D.INDUSTRY_LABELS[form.industry]);
+    lines.push("- 目標客群（TA）：" + form.ta);
+    if(form.extra) lines.push("- 補充描述：" + form.extra);
+    lines.push("");
+    lines.push("以下是已用規則排定的全年度檔期清單（週次／檔期名稱／建議地利／建議人和）：");
+    items.forEach(function(it){
+      lines.push("- id=" + it.id + "｜第" + it.week + "週｜" + it.name + "｜地利：" + (it.places.join("、") || "未指定") + "｜人和：" + (it.peopleLabels.join("、") || "未指定"));
+    });
+    lines.push("");
+    lines.push("請針對每一個檔期，把「戰略整合共鳴」文案改寫得更具體貼合這個品牌與其目標客群，說明為什麼天時×地利×人和三線收斂在這一檔期會是必然的轉換高峰，避免空泛行銷術語，每則30-90字。");
+    lines.push("同時給一段「顧問總評」（summary，80-150字），總結這份全年度規劃的整體打法，語氣像資深顧問跟客戶對話。");
+    lines.push("");
+    lines.push('請只輸出一個 JSON 物件，不要 markdown 圍欄、不要任何其他文字，格式如下：');
+    lines.push('{"summary":"...","items":[{"id":"nf01","synergy":"..."}]}');
+    lines.push("items 需涵蓋上面列出的每一個 id，順序不拘。");
+    return lines.join("\n");
+  }
+
+  function validateAiResult(parsed, items){
+    var idSet = {};
+    items.forEach(function(it){ idSet[it.id] = 1; });
+    var validItems = [];
+    if(Array.isArray(parsed.items)){
+      parsed.items.forEach(function(x){
+        if(x && idSet[x.id] && typeof x.synergy === "string"){
+          var t = x.synergy.trim();
+          if(t.length >= 10 && t.length <= 220) validItems.push({id: x.id, synergy: t});
+        }
+      });
+    }
+    var summary = null;
+    if(typeof parsed.summary === "string"){
+      var s = parsed.summary.trim();
+      if(s.length >= 15 && s.length <= 400) summary = s;
+    }
+    return {summary: summary, items: validItems};
+  }
+
+  /* ---------- 產生 / 重設 ---------- */
+  async function onGenerateClick(){
+    var form = readFormFromUI(placesRefGlobal || []);
+    state.form = form;
+
+    var ruleItems = generateCalendarRule(form);
+    var ruleOverview = buildOverviewRule(form, ruleItems);
+
+    var apiKey = $("aiKey").value.trim();
+    var provider = $("aiProvider").value;
+    var model = $("aiModel").value.trim() || AI_PROVIDERS[provider].defaultModel;
+
+    var btn = $("generateBtn");
+    btn.disabled = true;
+
+    if(!apiKey){
+      state.result = { items: ruleItems, overview: ruleOverview, overviewSource: "rule" };
+      renderAll(form, state.result);
+      persistState();
+      showStatus("info", "未輸入 AI 金鑰，已用規則式引擎排出基礎行事曆。");
+      btn.disabled = false;
+      return;
+    }
+
+    if(!ruleItems.length){
+      state.result = { items: ruleItems, overview: ruleOverview, overviewSource: "rule" };
+      renderAll(form, state.result);
+      persistState();
+      showStatus("info", "目前期間內沒有排到任何檔期，已跳過 AI 優化。");
+      btn.disabled = false;
+      return;
+    }
+
+    btn.textContent = "AI 優化中…";
+    showStatus("info", "正在請 AI 針對每個檔期優化戰略共鳴文案，請稍候…");
+    try{
+      var prompt = buildPrompt(form, ruleItems);
+      var raw = await callLLM(provider, model, apiKey, prompt, function(attempt, status, waitSec){
+        showStatus("info", "服務商回應 " + status + "，第 " + attempt + " 次重試，等待 " + waitSec + " 秒…");
+      });
+      var parsed = parseJsonObject(raw);
+      var validated = validateAiResult(parsed, ruleItems);
+
+      var synergyById = {};
+      validated.items.forEach(function(v){ synergyById[v.id] = v.synergy; });
+      var mergedItems = ruleItems.map(function(it){
+        if(synergyById[it.id]){
+          var copy = clone(it);
+          copy.synergy = synergyById[it.id];
+          copy.textSource = "ai";
+          return copy;
+        }
+        return it;
+      });
+      var aiHitCount = validated.items.length;
+
+      state.result = {
+        items: mergedItems,
+        overview: validated.summary || ruleOverview,
+        overviewSource: validated.summary ? "ai" : "rule"
+      };
+      renderAll(form, state.result);
+      persistState();
+      showStatus("ok", "AI 已優化 " + aiHitCount + " / " + ruleItems.length + " 個檔期的文案" + (aiHitCount < ruleItems.length ? "（其餘保留規則式文字）" : "") + "。");
+    }catch(err){
+      state.result = { items: ruleItems, overview: ruleOverview, overviewSource: "rule" };
+      renderAll(form, state.result);
+      persistState();
+      showStatus("err", "AI 優化失敗（" + err.message + "），已改用規則式引擎排出的基礎行事曆。");
+    }finally{
+      btn.disabled = false;
+      btn.textContent = "產生我的全年度行事曆";
+    }
+  }
+
+  function onResetClick(){
+    if(!confirm('要重設回預設範例「' + D.PRESETS[0].label + '」嗎？目前填寫的內容會被清除。')) return;
+    try{ localStorage.removeItem(FORM_KEY); localStorage.removeItem(RESULT_KEY); }catch(e){}
+    var form = defaultFormFromPreset(D.PRESETS[0]);
+    placesRefGlobal = form.places;
+    fillFormUI(form);
+    state.form = form;
+    state.result = { items: generateCalendarRule(form), overview: buildOverviewRule(form, generateCalendarRule(form)), overviewSource: "rule" };
+    renderAll(form, state.result);
+    showStatus("info", "已重設為預設範例。");
+  }
+
+  /* ---------- 匯出 ---------- */
+  function sanitizeFilename(s){
+    return s.replace(/[\\/:*?"<>|]/g, "").trim() || "全年度行銷行事曆";
+  }
+  function buildTextReport(form, result){
+    var lines = [];
+    lines.push(form.brandName + "｜全年度行銷行事曆（天時・地利・人和）");
+    lines.push("產業類別：" + D.INDUSTRY_LABELS[form.industry]);
+    lines.push("目標客群：" + form.ta);
+    lines.push("涵蓋期間：第 " + form.startWeek + " 週起，共 " + form.weeksCount + " 週");
+    lines.push("地利通路：" + form.places.map(function(p){ return p.name + "（" + D.PLACE_TYPE_LABELS[p.type] + "）"; }).join("、"));
+    lines.push("人和工具：" + form.channels.map(function(id){ return D.CHANNELS[id].label; }).join("、"));
+    lines.push("");
+    lines.push("【顧問總評】");
+    lines.push(result.overview);
+    lines.push("");
+    lines.push("【全年度檔期時間軸】");
+    result.items.forEach(function(it){
+      lines.push("----------------------------------------");
+      lines.push("第 " + it.week + " 週・" + it.dateLabel + (it.lunar ? "（農曆）" : "") + "・" + it.name);
+      lines.push("地利：" + (it.places.join("、") || "—"));
+      lines.push("人和：" + (it.peopleLabels.join("、") || "—"));
+      lines.push(it.synergy);
+    });
+    lines.push("----------------------------------------");
+    lines.push("");
+    lines.push("——由「全年度行銷行事曆產生器」產生，僅供行銷規劃參考，實際檔期請自行查證與調整（部分檔期為農曆日期，請依當年月曆微調）。");
+    return lines.join("\n");
+  }
+  function downloadText(filename, text){
+    var blob = new Blob([text], {type: "text/plain;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  function onDownloadClick(){
+    if(!state.form || !state.result) return;
+    var filename = sanitizeFilename(state.form.brandName) + "-全年度行銷行事曆.txt";
+    downloadText(filename, buildTextReport(state.form, state.result));
+    showStatus("ok", "已下載「" + filename + "」。");
+  }
+  function onPdfClick(){
+    window.print();
+  }
+
+  /* ---------- 初始化 ---------- */
+  function init(){
+    initIndustrySelect();
+    initExamples();
+    initAiPanel();
+
+    var savedForm = null, savedResult = null;
+    try{ savedForm = JSON.parse(localStorage.getItem(FORM_KEY)); }catch(e){}
+    try{ savedResult = JSON.parse(localStorage.getItem(RESULT_KEY)); }catch(e){}
+
+    var form = savedForm || defaultFormFromPreset(D.PRESETS[0]);
+    placesRefGlobal = form.places;
+    fillFormUI(form);
+    state.form = form;
+    state.result = savedResult || { items: generateCalendarRule(form), overview: buildOverviewRule(form, generateCalendarRule(form)), overviewSource: "rule" };
+    renderAll(form, state.result);
+
+    $("addPlaceBtn").addEventListener("click", function(){
+      placesRefGlobal.push({name: "", type: "online"});
+      renderPlaceList(placesRefGlobal);
+    });
+    $("generateBtn").addEventListener("click", onGenerateClick);
+    $("resetBtn").addEventListener("click", onResetClick);
+    $("downloadBtn").addEventListener("click", onDownloadClick);
+    $("pdfBtn").addEventListener("click", onPdfClick);
+
+    var WATERMARK_DATA_URI = "icons/icon-512.png";
+    $("wmImg").src = WATERMARK_DATA_URI;
+  }
+
+  init();
+})();
+</script>
+
+<script>
+/* ================= 頂部跑馬燈（獨立運作，跟上方主程式邏輯無關；共用工作區既有的公告 Google Sheet） ================= */
+(function () {
+  "use strict";
+  var MARQUEE_CHECK_URL = "https://script.google.com/macros/s/AKfycbwKX0DNNbY8y4nf90BFTHtxgfqJcHHcZasRrgycl4QAe52_hkjMWSkYk4xOsqU-JPCROw/exec";
+  var STORAGE_KEY = "amcMarquee";
+  var REFRESH_MS = 20 * 60 * 1000;
+
+  var bar = document.getElementById("marqueeBar");
+  var track = document.getElementById("marqueeTrack");
+  var lastKey = null;
+
+  function loadCache() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveCache(items) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+  function appendParsedText(container, text) {
+    var re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var lastIndex = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > lastIndex) container.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      var a = document.createElement("a");
+      a.href = m[2]; a.textContent = m[1]; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.style.color = "inherit"; a.style.textDecoration = "underline";
+      container.appendChild(a);
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < text.length) container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  function buildTrackContent(items) {
+    var frag = document.createDocumentFragment();
+    function appendPass() {
+      items.forEach(function (item, idx) {
+        if (idx > 0) frag.appendChild(document.createTextNode("　★　"));
+        appendParsedText(frag, item);
+      });
+    }
+    appendPass();
+    frag.appendChild(document.createTextNode("　★　"));
+    appendPass();
+    return frag;
+  }
+  function render(items) {
+    if (!items || !items.length) return;
+    var key = JSON.stringify(items);
+    if (key === lastKey) return;
+    lastKey = key;
+    track.innerHTML = "";
+    track.appendChild(buildTrackContent(items));
+    bar.classList.add("show");
+    document.body.classList.add("has-marquee");
+    var width = track.scrollWidth / 2;
+    track.style.animationDuration = Math.max(width / 80, 10) + "s";
+  }
+  function fetchMarquee() {
+    fetch(MARQUEE_CHECK_URL, { method: "POST", body: JSON.stringify({ serial: "" }) })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && Array.isArray(data.marquee) && data.marquee.length) {
+          saveCache(data.marquee);
+          render(data.marquee);
+        }
+      })
+      .catch(function () {});
+  }
+
+  render(loadCache());
+  fetchMarquee();
+  setInterval(fetchMarquee, REFRESH_MS);
+})();
+</script>
+
+<script>
+/* ================= PWA 加入主畫面（獨立運作，跟上方主程式邏輯無關） ================= */
+(function () {
+  "use strict";
+  var deferredPrompt = null;
+  var btn = document.getElementById("installBtn");
+  var ua = navigator.userAgent || "";
+  var isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var isMacDesktop = /Macintosh/.test(ua) && !isIOSDevice;
+  var isSafariEngine = /^((?!chrome|crios|fxios|edgios|android).)*safari/i.test(ua);
+  var isStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+
+  function fallbackMessage() {
+    if (isIOSDevice) return "請點畫面上的「分享」圖示，選「加入主畫面」";
+    if (isMacDesktop && isSafariEngine) return "請用選單列「檔案」→「加入 Dock」（Safari 17 以上）";
+    return "目前瀏覽器不支援安裝，或已安裝過";
+  }
+  function notify(msg) {
+    var t = document.getElementById("toast");
+    if (!t) { window.alert(msg); return; }
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(notify._timer);
+    notify._timer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+  }
+
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferredPrompt = e; });
+  window.addEventListener("appinstalled", function () { deferredPrompt = null; });
+
+  if (btn) {
+    if (isStandalone) { btn.style.display = "none"; }
+    else {
+      btn.addEventListener("click", function () {
+        if (!deferredPrompt) { notify(fallbackMessage()); return; }
+        try { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; }); }
+        catch (e) { notify(fallbackMessage()); }
+      });
+    }
+  }
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("service-worker.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
